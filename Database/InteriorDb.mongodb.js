@@ -3,43 +3,55 @@ use("Interior");
 // ================= ROLES =================
 db.roles.insertMany([
   { name: "admin" },
+  { name: "customer" },
   { name: "designer" },
-  { name: "user" },
+  { name: "contractor" },
 ]);
 
-// ================= USERS =================
 const roles = db.roles.find().toArray();
 
+// ================= USERS =================
 db.users.insertMany([
   {
     name: "Admin",
     email: "admin@gmail.com",
     password: "123456",
-    roleId: roles[0]._id,
+    roleId: roles.find((r) => r.name === "admin")._id,
     createdAt: new Date(),
   },
   {
-    name: "Designer A",
+    name: "Nguyen Van A",
+    email: "customer@gmail.com",
+    password: "123456",
+    roleId: roles.find((r) => r.name === "customer")._id,
+    phone: "0123456789",
+    address: "HCM",
+    createdAt: new Date(),
+  },
+  {
+    name: "Designer B",
     email: "designer@gmail.com",
     password: "123456",
-    roleId: roles[1]._id,
+    roleId: roles.find((r) => r.name === "designer")._id,
     createdAt: new Date(),
   },
   {
-    name: "User A",
-    email: "user@gmail.com",
+    name: "Contractor C",
+    email: "contractor@gmail.com",
     password: "123456",
-    roleId: roles[2]._id,
-    avatar: "avatar.jpg",
+    roleId: roles.find((r) => r.name === "contractor")._id,
     createdAt: new Date(),
   },
 ]);
 
+const users = db.users.find().toArray();
+
+const customer = users.find((u) => u.email === "customer@gmail.com");
+const designer = users.find((u) => u.email === "designer@gmail.com");
+const contractor = users.find((u) => u.email === "contractor@gmail.com");
+
 // ================= CATEGORIES =================
-db.categories.insertMany([
-  { name: "Living Room", description: "Phòng khách" },
-  { name: "Bedroom", description: "Phòng ngủ" },
-]);
+db.categories.insertMany([{ name: "Living Room" }, { name: "Bedroom" }]);
 
 const categories = db.categories.find().toArray();
 
@@ -50,7 +62,6 @@ db.products.insertMany([
     price: 10000000,
     categoryId: categories[0]._id,
     stock: 10,
-    images: ["sofa.jpg"],
     createdAt: new Date(),
   },
   {
@@ -58,61 +69,90 @@ db.products.insertMany([
     price: 8000000,
     categoryId: categories[1]._id,
     stock: 5,
-    images: ["bed.jpg"],
     createdAt: new Date(),
   },
 ]);
 
 const products = db.products.find().toArray();
 
-// ================= PROJECTS =================
-const users = db.users.find().toArray();
+// ================= DESIGNS =================
+db.designs.insertMany([
+  {
+    name: "Modern Living Room",
+    categoryId: categories[0]._id,
+    designerId: designer._id,
+    price: 2000000,
+    createdAt: new Date(),
+  },
+]);
 
+const designs = db.designs.find().toArray();
+
+// ================= PROJECTS =================
 db.projects.insertMany([
   {
     title: "Thiết kế phòng khách",
     description: "Phong cách hiện đại",
-    userId: users[2]._id,
+    userId: customer._id,
+    designerId: designer._id,
+    contractorId: contractor._id,
     categoryId: categories[0]._id,
+    designId: designs[0]._id,
     budget: 20000000,
-    status: "pending",
+    status: "building",
     createdAt: new Date(),
   },
 ]);
 
 const projects = db.projects.find().toArray();
 
-// ================= DESIGNS =================
-db.designs.insertMany([
+// ================= PROJECT PAYMENTS =================
+db.projectPayments.insertMany([
   {
     projectId: projects[0]._id,
-    designerId: users[1]._id,
-    title: "Design V1",
-    images: ["design1.jpg"],
-    description: "Bản thiết kế đầu tiên",
+    userId: customer._id,
+    amount: 5000000,
+    paymentType: "deposit",
+    paymentMethod: "cash",
+    paymentStatus: "paid",
+    createdAt: new Date(),
+  },
+  {
+    projectId: projects[0]._id,
+    userId: customer._id,
+    amount: 15000000,
+    paymentType: "final",
+    paymentMethod: "cash",
+    paymentStatus: "unpaid",
     createdAt: new Date(),
   },
 ]);
 
-// ================= ORDERS (EMBED ITEMS) =================
+// ================= ORDERS =================
 db.orders.insertMany([
   {
-    userId: users[2]._id,
-    totalPrice: 18000000,
-    status: "paid",
-    address: "Ho Chi Minh City",
+    userId: customer._id,
+    name: customer.name,
+    phone: customer.phone,
+    address: customer.address,
+
+    trackingCode: "ORD3001",
+    shippingStatus: "delivered",
+    shippedAt: new Date(),
+    deliveredAt: new Date(),
+
+    totalPrice: 10000000,
+    status: "completed",
+    paymentMethod: "cash",
+    paymentStatus: "paid",
     createdAt: new Date(),
+
     items: [
       {
-        productId: products[0]._id,
+        type: "product",
+        itemId: products[0]._id,
         name: "Sofa",
         price: 10000000,
-        quantity: 1,
-      },
-      {
-        productId: products[1]._id,
-        name: "Bed",
-        price: 8000000,
         quantity: 1,
       },
     ],
@@ -121,17 +161,27 @@ db.orders.insertMany([
 
 // ================= REVIEWS =================
 db.reviews.insertMany([
+  // ⭐ Review product
   {
+    userId: customer._id,
     productId: products[0]._id,
-    userId: users[2]._id,
+    projectId: null,
+    type: "product",
     rating: 5,
-    comment: "Rất đẹp!",
+    comment: "Sofa rất đẹp!",
     createdAt: new Date(),
-    user: {
-      name: users[2].name,
-      avatar: users[2].avatar,
-    },
+  },
+
+  // ⭐ Review project (thi công)
+  {
+    userId: customer._id,
+    productId: null,
+    projectId: projects[0]._id,
+    type: "project",
+    rating: 4,
+    comment: "Thi công tốt nhưng hơi chậm",
+    createdAt: new Date(),
   },
 ]);
 
-print("✅ Seed dữ liệu thành công!");
+print("✅ Seed FINAL++ (FULL SYSTEM) thành công!");
