@@ -17,6 +17,10 @@ db.users.insertMany([
     email: "admin@gmail.com",
     password: "123456",
     roleId: roles.find((r) => r.name === "admin")._id,
+
+    phone: "0900000000", // ⭐ thêm
+    address: "Hà Nội", // ⭐ thêm
+
     createdAt: new Date(),
   },
   {
@@ -24,8 +28,10 @@ db.users.insertMany([
     email: "customer@gmail.com",
     password: "123456",
     roleId: roles.find((r) => r.name === "customer")._id,
+
     phone: "0123456789",
     address: "HCM",
+
     createdAt: new Date(),
   },
   {
@@ -33,6 +39,10 @@ db.users.insertMany([
     email: "designer@gmail.com",
     password: "123456",
     roleId: roles.find((r) => r.name === "designer")._id,
+
+    phone: "0988888888", // ⭐ thêm
+    address: "Đà Nẵng", // ⭐ thêm
+
     createdAt: new Date(),
   },
   {
@@ -40,6 +50,10 @@ db.users.insertMany([
     email: "contractor@gmail.com",
     password: "123456",
     roleId: roles.find((r) => r.name === "contractor")._id,
+
+    phone: "0977777777", // ⭐ thêm
+    address: "Cần Thơ", // ⭐ thêm
+
     createdAt: new Date(),
   },
 ]);
@@ -51,7 +65,22 @@ const designer = users.find((u) => u.email === "designer@gmail.com");
 const contractor = users.find((u) => u.email === "contractor@gmail.com");
 
 // ================= CATEGORIES =================
-db.categories.insertMany([{ name: "Living Room" }, { name: "Bedroom" }]);
+db.categories.insertMany([
+  {
+    name: "Living Room",
+    image: "living-room.jpg",
+    description: "Nội thất phòng khách",
+    status: "active", // ⭐ thêm
+    createdAt: new Date(),
+  },
+  {
+    name: "Bedroom",
+    image: "bedroom.jpg",
+    description: "Nội thất phòng ngủ",
+    status: "active",
+    createdAt: new Date(),
+  },
+]);
 
 const categories = db.categories.find().toArray();
 
@@ -59,29 +88,69 @@ const categories = db.categories.find().toArray();
 db.products.insertMany([
   {
     name: "Sofa",
+    slug: "sofa-da-cao-cap",
     price: 10000000,
     categoryId: categories[0]._id,
+
+    description: "Sofa hiện đại, bọc da cao cấp",
+    images: ["sofa1.jpg", "sofa2.jpg"],
+
     stock: 10,
+    sold: 0,
+
+    status: "active",
     createdAt: new Date(),
   },
   {
     name: "Bed",
+    slug: "giuong-go-cao-cap",
     price: 8000000,
     categoryId: categories[1]._id,
+
+    description: "Giường ngủ gỗ tự nhiên",
+    images: ["bed1.jpg"],
+
     stock: 5,
+    sold: 0,
+
+    status: "active",
     createdAt: new Date(),
   },
 ]);
 
 const products = db.products.find().toArray();
 
+// ================= PROMOTIONS =================
+db.promotions.insertMany([
+  {
+    name: "Sale Tết",
+    description: "Giảm giá đầu năm",
+
+    discountPercent: 10,
+    productIds: [products[0]._id],
+
+    startDate: new Date(),
+    endDate: new Date(new Date().setDate(new Date().getDate() + 10)),
+
+    isActive: true,
+    createdAt: new Date(),
+  },
+]);
+
 // ================= DESIGNS =================
 db.designs.insertMany([
   {
     name: "Modern Living Room",
+    description: "Phong cách hiện đại, tối giản",
+
     categoryId: categories[0]._id,
     designerId: designer._id,
+
+    // ⭐ chỉ lưu link, không lưu file nặng
+    images: ["https://cdn.com/design1.jpg", "https://cdn.com/design2.jpg"],
+
     price: 2000000,
+
     createdAt: new Date(),
   },
 ]);
@@ -93,12 +162,17 @@ db.projects.insertMany([
   {
     title: "Thiết kế phòng khách",
     description: "Phong cách hiện đại",
+
     userId: customer._id,
     designerId: designer._id,
     contractorId: contractor._id,
+
     categoryId: categories[0]._id,
     designId: designs[0]._id,
+
+    area: 20,
     budget: 20000000,
+
     status: "building",
     createdAt: new Date(),
   },
@@ -111,19 +185,23 @@ db.projectPayments.insertMany([
   {
     projectId: projects[0]._id,
     userId: customer._id,
+
     amount: 5000000,
     paymentType: "deposit",
     paymentMethod: "cash",
     paymentStatus: "paid",
+
     createdAt: new Date(),
   },
   {
     projectId: projects[0]._id,
     userId: customer._id,
+
     amount: 15000000,
     paymentType: "final",
     paymentMethod: "cash",
     paymentStatus: "unpaid",
+
     createdAt: new Date(),
   },
 ]);
@@ -131,20 +209,20 @@ db.projectPayments.insertMany([
 // ================= ORDERS =================
 db.orders.insertMany([
   {
-    userId: customer._id,
-    name: customer.name,
-    phone: customer.phone,
-    address: customer.address,
+    userId: customer._id, // ⭐ chỉ dùng userId
 
     trackingCode: "ORD3001",
+
     shippingStatus: "delivered",
     shippedAt: new Date(),
     deliveredAt: new Date(),
 
     totalPrice: 10000000,
+
     status: "completed",
     paymentMethod: "cash",
     paymentStatus: "paid",
+
     createdAt: new Date(),
 
     items: [
@@ -161,7 +239,6 @@ db.orders.insertMany([
 
 // ================= REVIEWS =================
 db.reviews.insertMany([
-  // ⭐ Review product
   {
     userId: customer._id,
     productId: products[0]._id,
@@ -171,8 +248,6 @@ db.reviews.insertMany([
     comment: "Sofa rất đẹp!",
     createdAt: new Date(),
   },
-
-  // ⭐ Review project (thi công)
   {
     userId: customer._id,
     productId: null,
@@ -184,4 +259,4 @@ db.reviews.insertMany([
   },
 ]);
 
-print("✅ Seed FINAL++ (FULL SYSTEM) thành công!");
+print("✅ Seed UPDATED theo yêu cầu thành công!");
