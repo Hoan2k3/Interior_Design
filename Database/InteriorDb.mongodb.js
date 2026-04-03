@@ -157,23 +157,44 @@ db.designs.insertMany([
 
 const designs = db.designs.find().toArray();
 
-// ================= PROJECTS =================
 db.projects.insertMany([
+  // 🟢 Project mới tạo
   {
     title: "Thiết kế phòng khách",
     description: "Phong cách hiện đại",
 
     userId: customer._id,
-    designerId: designer._id,
-    contractorId: contractor._id,
 
-    categoryId: categories[0]._id,
-    designId: designs[0]._id,
+    designerId: null,
+    contractorId: null,
+    categoryId: null,
+    designId: null,
 
     area: 20,
     budget: 20000000,
 
+    status: "pending",
+
+    createdAt: new Date(),
+  },
+
+  // 🔵 Project đang thi công
+  {
+    title: "Thiết kế phòng ngủ",
+    description: "Phong cách tối giản",
+
+    userId: customer._id,
+
+    designerId: designer._id,
+    contractorId: contractor._id,
+    categoryId: categories[1]._id,
+    designId: designs[0]._id,
+
+    area: 15,
+    budget: 15000000,
+
     status: "building",
+
     createdAt: new Date(),
   },
 ]);
