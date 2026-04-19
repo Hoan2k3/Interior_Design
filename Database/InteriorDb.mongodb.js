@@ -1,19 +1,5 @@
 use("Interior");
 
-// ================= CLEAN =================
-db.roles.deleteMany({});
-db.users.deleteMany({});
-db.provinces.deleteMany({});
-db.wards.deleteMany({});
-db.categories.deleteMany({});
-db.products.deleteMany({});
-db.promotions.deleteMany({});
-db.designs.deleteMany({});
-db.projects.deleteMany({});
-db.projectPayments.deleteMany({});
-db.orders.deleteMany({});
-db.reviews.deleteMany({});
-
 // ================= ROLES =================
 db.roles.insertMany([
   { name: "admin" },
